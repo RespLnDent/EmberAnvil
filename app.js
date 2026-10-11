@@ -1,48 +1,54 @@
-// EmberAnvil v0.2 - özgün idle demirci (eski ForgeMaster adından arındırıldı)
+// EmberAnvil v0.3 — ekonomi + ekipman (özgün içerik)
 const AGES = [
-  { name: "Taş Devri", mult: 1, cost: 0, gear: "Taş Balta" },
-  { name: "Orta Çağ", mult: 2, cost: 500, gear: "Demir Kılıç" },
-  { name: "Modern Çağ", mult: 4, cost: 2500, gear: "Çelik Pala" },
-  { name: "Uzay Çağı", mult: 8, cost: 12000, gear: "Plazma Baltası" },
-  { name: "Kuantum Çağı", mult: 16, cost: 60000, gear: "Kuantum Zırhı" },
+  { name: "Taş Devri",  mult: 1,  cost: 0,     gear: "Taş Balta",    armor: "Kürk Yelek",   foe: "Kaya Golemi" },
+  { name: "Orta Çağ",   mult: 2,  cost: 500,   gear: "Demir Kılıç",  armor: "Zincir Zırh",  foe: "Kara Şövalye" },
+  { name: "Modern Çağ", mult: 4,  cost: 2500,  gear: "Çelik Pala",   armor: "Kompozit Yelek", foe: "Hurda Drone" },
+  { name: "Uzay Çağı",  mult: 8,  cost: 12000, gear: "Plazma Baltası", armor: "Nano Zırh",   foe: "Void Akıncısı" },
+  { name: "Kuantum Çağı", mult: 16, cost: 60000, gear: "Kuantum Kılıcı", armor: "Kuantum Pelerin", foe: "Entropi Lordu" },
+];
+// Üretilebilir silahlar: her çağda 2 kademe (özgün isimler)
+const WEAPONS = [
+  { id: "tas-balta",    name: "Taş Balta",     age: 0, ingot: 3,  atk: 6  },
+  { id: "kemik-mizrak", name: "Kemik Mızrak",  age: 0, ingot: 6,  atk: 11 },
+  { id: "demir-kilic",  name: "Demir Kılıç",   age: 1, ingot: 8,  atk: 22 },
+  { id: "sovalye-teberi", name: "Şövalye Teberi", age: 1, ingot: 14, atk: 36 },
+  { id: "celik-pala",   name: "Çelik Pala",    age: 2, ingot: 18, atk: 70 },
+  { id: "titanyum-cekic", name: "Titanyum Çekiç", age: 2, ingot: 30, atk: 110 },
+  { id: "plazma-baltasi", name: "Plazma Baltası", age: 3, ingot: 40, atk: 220 },
+  { id: "nolcek-kamasi", name: "Nötrino Kaması", age: 3, ingot: 65, atk: 340 },
+  { id: "kuantum-kilic", name: "Kuantum Kılıcı", age: 4, ingot: 90, atk: 700 },
+  { id: "tekillik-orsu", name: "Tekillik Gürzü", age: 4, ingot: 150, atk: 1100 },
 ];
 const SAVE_KEY = "emberanvil-v1";
-const OLD_KEYS = ["forgemaster-web-v1"];
 
 const def = () => ({
-  gold: 0, ore: 0, ingot: 0,
-  level: 1, xp: 0,
-  pickLv: 1, forgeLv: 1, bellowsLv: 0,
-  ageIndex: 0,
-  totalForged: 0, wins: 0,
-  autoFight: true,
-  lastSeen: Date.now(),
+  gold: 0, ore: 0, ingot: 0, level: 1, xp: 0,
+  pickLv: 1, forgeLv: 1, bellowsLv: 0, ageIndex: 0,
+  totalForged: 0, wins: 0, autoFight: true,
+  owned: [], equipped: null, lastSeen: Date.now(),
 });
-
 let s = def();
 
-function xpNeed() { return 20 * s.level; }
-function mineAmount() { return s.pickLv; }
-function forgeCost() { return 2; }
-function forgeGold() { return (10 + s.forgeLv * 8) * AGES[s.ageIndex].mult; }
-// Arena saldırı gücü: örs + seviye + çağ
-function attackPower() { return Math.floor((4 + s.forgeLv * 3 + s.level * 2) * AGES[s.ageIndex].mult); }
-function perSec() { return s.bellowsLv * (2 + s.ageIndex * 2); }
-function pickCost() { return Math.floor(25 * Math.pow(1.6, s.pickLv - 1)); }
-function forgeUpCost() { return Math.floor(50 * Math.pow(1.7, s.forgeLv - 1)); }
-function bellowsCost() { return Math.floor(40 * Math.pow(1.65, s.bellowsLv)); }
-function ageCost() {
-  if (s.ageIndex + 1 >= AGES.length) return null;
-  return AGES[s.ageIndex + 1].cost;
+const xpNeed = () => 20 * s.level;
+const mineAmount = () => s.pickLv;
+const forgeCost = () => 2;
+const forgeGold = () => (10 + s.forgeLv * 8) * AGES[s.ageIndex].mult;
+const perSec = () => s.bellowsLv * (2 + s.ageIndex * 2);
+const pickCost = () => Math.floor(25 * Math.pow(1.6, s.pickLv - 1));
+const forgeUpCost = () => Math.floor(50 * Math.pow(1.7, s.forgeLv - 1));
+const bellowsCost = () => Math.floor(40 * Math.pow(1.65, s.bellowsLv));
+const ageCost = () => (s.ageIndex + 1 >= AGES.length ? null : AGES[s.ageIndex + 1].cost);
+const weaponAtk = (id) => (WEAPONS.find((w) => w.id === id)?.atk ?? 0);
+function attackPower() {
+  const base = 4 + s.forgeLv * 2 + s.level * 2;
+  return Math.floor((base + weaponAtk(s.equipped)) * AGES[s.ageIndex].mult);
 }
 
-// battle.js ile köprü: canlı statları oku, ödül yaz
 window.GAME = {
-  get stats() { return { atk: attackPower(), level: s.level, age: s.ageIndex, auto: s.autoFight }; },
-  onWin(reward) {
-    s.gold += reward.gold; s.wins += 1; gainXp(reward.xp); render();
+  get stats() {
+    return { atk: attackPower(), level: s.level, age: s.ageIndex, auto: s.autoFight, equipped: s.equipped, owned: [...s.owned] };
   },
-  onForgeSmash() { /* battle.js çekiç efektini tetikler */ },
+  onWin(r) { s.gold += r.gold; s.wins += 1; gainXp(r.xp); render(); },
 };
 
 function save(silent) {
@@ -52,13 +58,9 @@ function save(silent) {
 }
 function load() {
   try {
-    let raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) {
-      for (const k of OLD_KEYS) { raw = localStorage.getItem(k); if (raw) { localStorage.removeItem(k); break; } }
-    }
+    const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return;
-    const d = JSON.parse(raw);
-    s = Object.assign(def(), d);
+    s = Object.assign(def(), JSON.parse(raw));
     const dt = Math.min(Date.now() - (s.lastSeen || Date.now()), 8 * 3600 * 1000) / 1000;
     const gain = Math.floor(perSec() * dt);
     if (gain > 0) {
@@ -66,19 +68,17 @@ function load() {
       document.getElementById("offline-msg").textContent =
         `Çevrimdışıyken +${gain} altın kazandın (${Math.floor(dt / 60)} dk).`;
     }
-  } catch { /* bozuk kayıt yok say */ }
+  } catch { /* yok say */ }
 }
-
 function gainXp(n) {
   s.xp += n;
   while (s.xp >= xpNeed()) { s.xp -= xpNeed(); s.level += 1; flash(`Seviye atladın! Lv ${s.level}`); }
 }
-
-function flash(msg) {
+function flash(m) {
   const el = document.getElementById("offline-msg");
-  el.textContent = msg;
+  el.textContent = m;
   clearTimeout(flash.t);
-  flash.t = setTimeout(() => { if (el.textContent === msg) el.textContent = ""; }, 2500);
+  flash.t = setTimeout(() => { if (el.textContent === m) el.textContent = ""; }, 2500);
 }
 
 function render() {
@@ -90,7 +90,8 @@ function render() {
   $("xp").textContent = s.xp;
   $("xp-need").textContent = xpNeed();
   $("per-sec").textContent = perSec();
-  $("forge-power").textContent = forgeGold();
+  $("atk").textContent = attackPower();
+  $("equipped-name").textContent = WEAPONS.find((w) => w.id === s.equipped)?.name ?? "Yumruk";
   $("age-name").textContent = `${AGES[s.ageIndex].name} — ${AGES[s.ageIndex].gear}`;
   $("xp-bar").style.width = `${(s.xp / xpNeed()) * 100}%`;
   $("mine-amount").textContent = mineAmount();
@@ -101,8 +102,7 @@ function render() {
   $("pick-cost").textContent = pickCost();
   $("forge-up-cost").textContent = forgeUpCost();
   $("bellows-cost").textContent = bellowsCost();
-  const at = document.getElementById("auto-t");
-  if (at) at.textContent = s.autoFight ? "Açık" : "Kapalı";
+  $("auto-t").textContent = s.autoFight ? "Açık" : "Kapalı";
 
   const c = ageCost();
   $("age-cost").textContent = c === null ? "MAX" : c;
@@ -113,45 +113,77 @@ function render() {
   $("btn-up-forge").disabled = s.gold < forgeUpCost();
   $("btn-up-bellows").disabled = s.gold < bellowsCost();
 
-  const ol = $("ages");
-  ol.innerHTML = "";
-  AGES.forEach((a, i) => {
-    const li = document.createElement("li");
-    li.textContent = `${a.name} (x${a.mult}) — ${a.gear}`;
-    if (i < s.ageIndex) li.className = "done";
-    if (i === s.ageIndex) li.className = "now";
-    ol.appendChild(li);
-  });
-}
+  $("ages").innerHTML = AGES.map((a, i) =>
+    `<li class="${i < s.ageIndex ? "done" : i === s.ageIndex ? "now" : ""}">${a.name} (x${a.mult}) — ${a.gear} → ${a.foe}</li>`).join("");
+  $("armor-list").innerHTML = AGES.map((a, i) =>
+    `<li class="${i < s.ageIndex ? "done" : i === s.ageIndex ? "now" : ""}">${a.armor}${i === s.ageIndex ? " (giyiliyor)" : ""}</li>`).join("");
 
-function tick() {
-  s.gold += perSec() / 10;
-  render();
+  // üretim listesi
+  $("craft-list").innerHTML = "";
+  WEAPONS.filter((w) => w.age <= s.ageIndex).forEach((w) => {
+    const owned = s.owned.includes(w.id);
+    const b = document.createElement("button");
+    b.textContent = owned ? `✔ ${w.name} (+${w.atk})` : `⚒️ ${w.name} (+${w.atk}) — ${w.ingot} külçe`;
+    b.disabled = owned || s.ingot < w.ingot;
+    b.onclick = () => {
+      if (s.ingot < w.ingot || s.owned.includes(w.id)) return;
+      s.ingot -= w.ingot; s.owned.push(w.id); s.equipped = w.id; gainXp(10);
+      window.dispatchEvent(new CustomEvent("ember-craft", { detail: w.id }));
+      flash(`${w.name} dövüldü ve kuşanıldı!`); render();
+    };
+    $("craft-list").appendChild(b);
+  });
+
+  // envanter
+  $("inv-list").innerHTML = s.owned.length ? "" : `<span class="muted">Henüz silahın yok — Üretim sekmesinden döv.</span>`;
+  s.owned.forEach((id) => {
+    const w = WEAPONS.find((x) => x.id === id);
+    if (!w) return;
+    const b = document.createElement("button");
+    b.textContent = (s.equipped === id ? "✅ " : "🔶 ") + `${w.name} (+${w.atk})`;
+    b.onclick = () => {
+      s.equipped = id;
+      window.dispatchEvent(new CustomEvent("ember-equip", { detail: id }));
+      render();
+    };
+    $("inv-list").appendChild(b);
+  });
+  window.dispatchEvent(new CustomEvent("ember-stats"));
 }
 
 window.addEventListener("DOMContentLoaded", () => {
   load();
   const $ = (id) => document.getElementById(id);
-  $("btn-mine").onclick = () => { s.ore += mineAmount(); render(); };
-  $("btn-smelt").onclick = () => {
-    if (s.ore < 2) return;
-    s.ore -= 2; s.ingot += 1; gainXp(2); render();
+  document.querySelectorAll(".tab").forEach((t) => {
+    t.onclick = () => {
+      document.querySelectorAll(".tab").forEach((x) => x.classList.remove("active"));
+      t.classList.add("active");
+      document.querySelectorAll(".tabpage").forEach((p) => (p.hidden = true));
+      $("tab-" + t.dataset.tab).hidden = false;
+    };
+  });
+  $("btn-view-forge").onclick = () => {
+    $("forge-view").hidden = false; $("arena-view").hidden = true;
+    $("btn-view-forge").classList.add("active"); $("btn-view-arena").classList.remove("active");
   };
+  $("btn-view-arena").onclick = () => {
+    $("forge-view").hidden = true; $("arena-view").hidden = false;
+    $("btn-view-arena").classList.add("active"); $("btn-view-forge").classList.remove("active");
+  };
+  $("btn-mine").onclick = () => { s.ore += mineAmount(); render(); };
+  $("btn-smelt").onclick = () => { if (s.ore < 2) return; s.ore -= 2; s.ingot += 1; gainXp(2); render(); };
   $("btn-forge").onclick = () => {
     if (s.ingot < forgeCost()) return;
-    s.ingot -= forgeCost();
-    const g = forgeGold();
-    s.gold += g; s.totalForged += 1; gainXp(6);
-    window.dispatchEvent(new CustomEvent("ember-smash"));
-    render();
+    s.ingot -= forgeCost(); s.gold += forgeGold(); s.totalForged += 1; gainXp(6);
+    window.dispatchEvent(new CustomEvent("ember-smash")); render();
   };
   $("btn-up-pick").onclick = () => { if (s.gold < pickCost()) return; s.gold -= pickCost(); s.pickLv += 1; render(); };
   $("btn-up-forge").onclick = () => { if (s.gold < forgeUpCost()) return; s.gold -= forgeUpCost(); s.forgeLv += 1; render(); };
   $("btn-up-bellows").onclick = () => { if (s.gold < bellowsCost()) return; s.gold -= bellowsCost(); s.bellowsLv += 1; render(); };
   $("btn-age").onclick = () => {
-    const c = ageCost();
-    if (c === null || s.gold < c) return;
-    s.gold -= c; s.ageIndex += 1; gainXp(20); flash(`${AGES[s.ageIndex].name}'e geçtin!`); render();
+    const cc = ageCost();
+    if (cc === null || s.gold < cc) return;
+    s.gold -= cc; s.ageIndex += 1; gainXp(20); flash(`${AGES[s.ageIndex].name}'e geçtin!`); render();
   };
   $("btn-save").onclick = () => save(false);
   $("btn-auto").onclick = () => { s.autoFight = !s.autoFight; render(); };
@@ -162,6 +194,6 @@ window.addEventListener("DOMContentLoaded", () => {
     localStorage.removeItem(SAVE_KEY); s = def(); render();
   };
   render();
-  setInterval(tick, 100);
+  setInterval(() => { s.gold += perSec() / 10; render(); }, 100);
   setInterval(() => save(true), 5000);
 });

@@ -1,16 +1,13 @@
 ﻿# EmberAnvil
 
-Özgün tarayıcı idle demirci oyunu + 3D arena (v0.2). Herhangi bir mevcut oyunun kopyası değildir; isim, kod ve modeller özgündür.
+Özgün 3D idle demirci oyunu (v0.3). Herhangi bir mevcut oyunun kopyası değildir; isim, kod, modeller ve metinler özgündür.
 
-## Oynanış
-- ⛏️ Maden kaz → 🔥 erit → ⚒️ döv (çekiç 3D'de vurur, kıvılcım çıkar)
-- Yükselt: kazma / örs / körük
-- Çağlar: Taş → Orta Çağ → Modern → Uzay → Kuantum
-- ⚔️ 3D arena: Three.js ile kodla üretilmiş düşük-poli demirci vs rakip, yürüme/saldırı animasyonu, oto-savaş, galibiyete altın+XP
-- Kayıt: localStorage + çevrimdışı kazanç
+## Özellikler
+- 🔥 3D demirhane: ocak + ateş parçacıkları, örs, çekiç animasyonu, kıvılcım, silah rafı (envanterini gösterir)
+- ⚔️ 3D arena: çağa göre zırh giyen demirci vs 5 özgün rakip (Kaya Golemi, Kara Şövalye, Hurda Drone, Void Akıncısı, Entropi Lordu), yürüme/saldırı/ölüm animasyonu, hasar yazıları, oto-savaş
+- ⚒️ Üretim: maden → külçe → altın + 10 kuşanılabilir silah (her çağda 2 kademe)
+- 🛡️ Ekipman: kuşandığın silah 3D modelde eline gelir, zırh seti çağına göre değişir
+- 💾 localStorage kayıt + çevrimdışı kazanç
 
 ## Çalıştır
-`index.html` (internet gerekli: Three.js CDN). Veya Pages: https://resplndent.github.io/EmberAnvil/
-
-## Not
-Teliften kaçınmak için "ForgeMaster" adı ve assetleri kullanılmadı.
+`index.html` (Three.js CDN için internet gerekir). Pages: https://resplndent.github.io/EmberAnvil/

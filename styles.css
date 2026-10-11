@@ -26,3 +26,17 @@ footer { text-align:center; color:var(--muted); padding:16px; font-size:.85em; }
 .hp .bar { margin:4px 0; }
 #hp-player { height:100%; width:100%; background:linear-gradient(90deg,#57d957,#2e8b57); }
 #hp-enemy { height:100%; width:100%; background:linear-gradient(90deg,#e85757,#8b2e2e); }
+.tabs { display:flex; gap:8px; }
+.tab { flex:1; font-weight:bold; }
+.tab.active { background:var(--btn-h); border-color:var(--gold); color:var(--gold); }
+.seg.active { border-color:var(--gold); color:var(--gold); }
+.canvas-wrap { position:relative; }
+.canvas-wrap canvas { width:100%; height:300px; display:block; border-radius:10px; border:1px solid #3a2f1e; background:#000; }
+.canvas-wrap > div { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.dmg { position:absolute; transform:translate(-50%,-50%); font-weight:bold; font-size:18px; animation:rise 1.1s ease-out forwards; text-shadow:0 2px 4px #000; }
+.dmg.hit { color:#ffd060; } .dmg.hurt { color:#ff6060; } .dmg.win { color:#7dd87d; }
+@keyframes rise { to { transform:translate(-50%,-160%); opacity:0; } }
+.gear-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.gear-grid button { text-align:left; }
+#armor-list { padding-left:20px; }
+#armor-list li.now { color:var(--gold); font-weight:bold; }

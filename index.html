@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EmberAnvil - Idle Demirci (3D Arena)</title>
+  <title>EmberAnvil — 3D Idle Demirci</title>
   <link rel="stylesheet" href="styles.css" />
   <script type="importmap">
     { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
@@ -12,7 +12,7 @@
 <body>
   <header>
     <h1>🔥 EmberAnvil</h1>
-    <p class="subtitle">Özgün idle demirci oyunu — döv, yükselt, 3D arenada savaş</p>
+    <p class="subtitle">Özgün 3D idle demirci — döv, kuşan, arenada savaş</p>
   </header>
 
   <main>
@@ -24,69 +24,83 @@
         <div>🧱 Külçe: <strong id="ingot">0</strong></div>
         <div>⭐ Seviye: <strong id="level">1</strong> (<span id="xp">0</span>/<span id="xp-need">20</span> XP)</div>
         <div>⏳ Saniyede: <strong id="per-sec">0</strong> altın</div>
-        <div>🔨 Dövme gücü: <strong id="forge-power">1</strong></div>
+        <div>🗡️ Saldırı: <strong id="atk">0</strong> (kuşanılan: <span id="equipped-name">—</span>)</div>
       </div>
       <div class="bar"><div id="xp-bar"></div></div>
       <p id="offline-msg" class="muted"></p>
     </section>
 
-    <section class="card">
-      <h2>⚔️ 3D Arena</h2>
-      <div class="arena-wrap">
-        <canvas id="arena" width="640" height="300"></canvas>
+    <nav class="tabs">
+      <button class="tab active" data-tab="view">🎥 3D Görünüm</button>
+      <button class="tab" data-tab="craft">⚒️ Üretim</button>
+      <button class="tab" data-tab="gear">🛡️ Ekipman</button>
+      <button class="tab" data-tab="up">⬆️ Gelişim</button>
+    </nav>
+
+    <section class="card tabpage" id="tab-view">
+      <div class="view-btns btn-row">
+        <button id="btn-view-forge" class="seg active">🔥 Demirhane</button>
+        <button id="btn-view-arena" class="seg">⚔️ Arena</button>
+      </div>
+      <div id="forge-view">
+        <div class="canvas-wrap"><canvas id="scene-forge"></canvas><div id="forge-fx"></div></div>
+        <p class="muted">Demircin çalışıyor. Döv butonu çekici vurur, raftaki silahlar envanterini gösterir.</p>
+      </div>
+      <div id="arena-view" hidden>
+        <div class="canvas-wrap"><canvas id="scene-arena"></canvas><div id="arena-fx"></div></div>
         <div class="hp-row">
           <div class="hp">🧑‍🏭 Sen <div class="bar"><div id="hp-player"></div></div><span id="hp-player-t"></span></div>
-          <div class="hp">👹 Rakip <div class="bar"><div id="hp-enemy"></div></div><span id="hp-enemy-t"></span></div>
+          <div class="hp">👹 <span id="foe-name">Rakip</span> <div class="bar"><div id="hp-enemy"></div></div><span id="hp-enemy-t"></span></div>
         </div>
+        <div class="btn-row">
+          <button id="btn-attack">🗡️ Saldır</button>
+          <button id="btn-auto">🤖 Oto-savaş: <span id="auto-t">Açık</span></button>
+          <button id="btn-next-foe">👹 Sonraki Rakip</button>
+        </div>
+        <p id="battle-log" class="muted">Arena hazır.</p>
       </div>
-      <div class="btn-row">
-        <button id="btn-attack">🗡️ Saldır</button>
-        <button id="btn-auto">🤖 Oto-savaş: <span id="auto-t">Açık</span></button>
-        <button id="btn-next-foe">👹 Sonraki Rakip</button>
-      </div>
-      <p id="battle-log" class="muted">Arena hazır. Dövdüğün silahlar saldırını güçlendirir.</p>
     </section>
 
-    <section class="card">
-      <h2>Eylemler</h2>
+    <section class="card tabpage" id="tab-craft" hidden>
+      <h2>⚒️ Üretim</h2>
       <div class="btn-row">
         <button id="btn-mine">⛏️ Maden Kaz (+<span id="mine-amount">1</span> cevher)</button>
         <button id="btn-smelt">🔥 Erit (2 cevher → 1 külçe)</button>
         <button id="btn-forge">⚒️ Döv (<span id="forge-cost">2</span> külçe → altın)</button>
       </div>
+      <h3>Silah Döv (kuşanılabilir)</h3>
+      <div id="craft-list" class="gear-grid"></div>
     </section>
 
-    <section class="card">
-      <h2>Yükseltmeler</h2>
+    <section class="card tabpage" id="tab-gear" hidden>
+      <h2>🛡️ Ekipman &amp; Kıyafet</h2>
+      <p class="muted">Dövdüğün silahı kuşan — saldırın ve 3D modelin değişir. Zırh seti çağına göre otomatik giyilir.</p>
+      <div id="inv-list" class="gear-grid"></div>
+      <h3>Zırh Setleri (çağ)</h3>
+      <ol id="armor-list"></ol>
+    </section>
+
+    <section class="card tabpage" id="tab-up" hidden>
+      <h2>⬆️ Yükseltmeler</h2>
       <div class="btn-row">
         <button id="btn-up-pick">⛏️ Kazma Lv <span id="pick-lv">1</span> (<span id="pick-cost">25</span> 🪙)</button>
         <button id="btn-up-forge">⚒️ Örs Lv <span id="forge-lv">1</span> (<span id="forge-up-cost">50</span> 🪙)</button>
         <button id="btn-up-bellows">💨 Körük Lv <span id="bellows-lv">0</span> (<span id="bellows-cost">40</span> 🪙)</button>
       </div>
-      <p class="muted">Örs seviyen arenadaki saldırını da artırır.</p>
-    </section>
-
-    <section class="card">
       <h2>Çağlar</h2>
       <ol id="ages"></ol>
       <button id="btn-age">🚀 Sonraki Çağa Geç (<span id="age-cost">500</span> 🪙)</button>
-    </section>
-
-    <section class="card">
       <h2>Kayıt</h2>
       <div class="btn-row">
         <button id="btn-save">💾 Kaydet</button>
         <button id="btn-reset" class="danger">🗑️ Sıfırla</button>
       </div>
-      <p class="muted">Otomatik kayıt 5 sn'de bir + çevrimdışı kazanç (maks 8 saat).</p>
     </section>
   </main>
 
-  <footer>
-    <span>EmberAnvil v0.2 — özgün yapım, tüm modeller kod ile üretildi</span>
-  </footer>
+  <footer><span>EmberAnvil v0.3 — özgün yapım, tüm 3D modeller kod ile üretildi</span></footer>
 
   <script src="app.js"></script>
-  <script type="module" src="battle.js"></script>
+  <script type="module" src="forge3d.js"></script>
 </body>
 </html>
