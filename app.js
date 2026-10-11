@@ -1,19 +1,21 @@
-// ForgeMaster Web v0.1 - basit idle demirci prototipi
+// EmberAnvil v0.2 - özgün idle demirci (eski ForgeMaster adından arındırıldı)
 const AGES = [
   { name: "Taş Devri", mult: 1, cost: 0, gear: "Taş Balta" },
   { name: "Orta Çağ", mult: 2, cost: 500, gear: "Demir Kılıç" },
-  { name: "Modern Çağ", mult: 4, cost: 2500, gear: "Çelik Tüfek" },
-  { name: "Uzay Çağı", mult: 8, cost: 12000, gear: "Plazma Kılıcı" },
+  { name: "Modern Çağ", mult: 4, cost: 2500, gear: "Çelik Pala" },
+  { name: "Uzay Çağı", mult: 8, cost: 12000, gear: "Plazma Baltası" },
   { name: "Kuantum Çağı", mult: 16, cost: 60000, gear: "Kuantum Zırhı" },
 ];
-const SAVE_KEY = "forgemaster-web-v1";
+const SAVE_KEY = "emberanvil-v1";
+const OLD_KEYS = ["forgemaster-web-v1"];
 
 const def = () => ({
   gold: 0, ore: 0, ingot: 0,
   level: 1, xp: 0,
   pickLv: 1, forgeLv: 1, bellowsLv: 0,
   ageIndex: 0,
-  totalForged: 0,
+  totalForged: 0, wins: 0,
+  autoFight: true,
   lastSeen: Date.now(),
 });
 
@@ -23,6 +25,8 @@ function xpNeed() { return 20 * s.level; }
 function mineAmount() { return s.pickLv; }
 function forgeCost() { return 2; }
 function forgeGold() { return (10 + s.forgeLv * 8) * AGES[s.ageIndex].mult; }
+// Arena saldırı gücü: örs + seviye + çağ
+function attackPower() { return Math.floor((4 + s.forgeLv * 3 + s.level * 2) * AGES[s.ageIndex].mult); }
 function perSec() { return s.bellowsLv * (2 + s.ageIndex * 2); }
 function pickCost() { return Math.floor(25 * Math.pow(1.6, s.pickLv - 1)); }
 function forgeUpCost() { return Math.floor(50 * Math.pow(1.7, s.forgeLv - 1)); }
@@ -32,6 +36,15 @@ function ageCost() {
   return AGES[s.ageIndex + 1].cost;
 }
 
+// battle.js ile köprü: canlı statları oku, ödül yaz
+window.GAME = {
+  get stats() { return { atk: attackPower(), level: s.level, age: s.ageIndex, auto: s.autoFight }; },
+  onWin(reward) {
+    s.gold += reward.gold; s.wins += 1; gainXp(reward.xp); render();
+  },
+  onForgeSmash() { /* battle.js çekiç efektini tetikler */ },
+};
+
 function save(silent) {
   s.lastSeen = Date.now();
   localStorage.setItem(SAVE_KEY, JSON.stringify(s));
@@ -39,11 +52,13 @@ function save(silent) {
 }
 function load() {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    let raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) {
+      for (const k of OLD_KEYS) { raw = localStorage.getItem(k); if (raw) { localStorage.removeItem(k); break; } }
+    }
     if (!raw) return;
     const d = JSON.parse(raw);
     s = Object.assign(def(), d);
-    // çevrimdışı kazanç
     const dt = Math.min(Date.now() - (s.lastSeen || Date.now()), 8 * 3600 * 1000) / 1000;
     const gain = Math.floor(perSec() * dt);
     if (gain > 0) {
@@ -86,6 +101,8 @@ function render() {
   $("pick-cost").textContent = pickCost();
   $("forge-up-cost").textContent = forgeUpCost();
   $("bellows-cost").textContent = bellowsCost();
+  const at = document.getElementById("auto-t");
+  if (at) at.textContent = s.autoFight ? "Açık" : "Kapalı";
 
   const c = ageCost();
   $("age-cost").textContent = c === null ? "MAX" : c;
@@ -124,7 +141,9 @@ window.addEventListener("DOMContentLoaded", () => {
     if (s.ingot < forgeCost()) return;
     s.ingot -= forgeCost();
     const g = forgeGold();
-    s.gold += g; s.totalForged += 1; gainXp(6); render();
+    s.gold += g; s.totalForged += 1; gainXp(6);
+    window.dispatchEvent(new CustomEvent("ember-smash"));
+    render();
   };
   $("btn-up-pick").onclick = () => { if (s.gold < pickCost()) return; s.gold -= pickCost(); s.pickLv += 1; render(); };
   $("btn-up-forge").onclick = () => { if (s.gold < forgeUpCost()) return; s.gold -= forgeUpCost(); s.forgeLv += 1; render(); };
@@ -135,6 +154,9 @@ window.addEventListener("DOMContentLoaded", () => {
     s.gold -= c; s.ageIndex += 1; gainXp(20); flash(`${AGES[s.ageIndex].name}'e geçtin!`); render();
   };
   $("btn-save").onclick = () => save(false);
+  $("btn-auto").onclick = () => { s.autoFight = !s.autoFight; render(); };
+  $("btn-attack").onclick = () => window.dispatchEvent(new CustomEvent("ember-attack"));
+  $("btn-next-foe").onclick = () => window.dispatchEvent(new CustomEvent("ember-next-foe"));
   $("btn-reset").onclick = () => {
     if (!confirm("Sıfırlansın mı?")) return;
     localStorage.removeItem(SAVE_KEY); s = def(); render();

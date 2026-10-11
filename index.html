@@ -3,13 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ForgeMaster Web - Idle Demirci</title>
+  <title>EmberAnvil - Idle Demirci (3D Arena)</title>
   <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
+    { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+  </script>
 </head>
 <body>
   <header>
-    <h1>⚒️ ForgeMaster Web</h1>
-    <p class="subtitle">Çağlar boyunca döv, yükselt, idle kazan</p>
+    <h1>🔥 EmberAnvil</h1>
+    <p class="subtitle">Özgün idle demirci oyunu — döv, yükselt, 3D arenada savaş</p>
   </header>
 
   <main>
@@ -28,6 +31,23 @@
     </section>
 
     <section class="card">
+      <h2>⚔️ 3D Arena</h2>
+      <div class="arena-wrap">
+        <canvas id="arena" width="640" height="300"></canvas>
+        <div class="hp-row">
+          <div class="hp">🧑‍🏭 Sen <div class="bar"><div id="hp-player"></div></div><span id="hp-player-t"></span></div>
+          <div class="hp">👹 Rakip <div class="bar"><div id="hp-enemy"></div></div><span id="hp-enemy-t"></span></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="btn-attack">🗡️ Saldır</button>
+        <button id="btn-auto">🤖 Oto-savaş: <span id="auto-t">Açık</span></button>
+        <button id="btn-next-foe">👹 Sonraki Rakip</button>
+      </div>
+      <p id="battle-log" class="muted">Arena hazır. Dövdüğün silahlar saldırını güçlendirir.</p>
+    </section>
+
+    <section class="card">
       <h2>Eylemler</h2>
       <div class="btn-row">
         <button id="btn-mine">⛏️ Maden Kaz (+<span id="mine-amount">1</span> cevher)</button>
@@ -43,7 +63,7 @@
         <button id="btn-up-forge">⚒️ Örs Lv <span id="forge-lv">1</span> (<span id="forge-up-cost">50</span> 🪙)</button>
         <button id="btn-up-bellows">💨 Körük Lv <span id="bellows-lv">0</span> (<span id="bellows-cost">40</span> 🪙)</button>
       </div>
-      <p class="muted">Kazma: tıklama başına cevher. Örs: dövme başına altın. Körük: saniyede altın.</p>
+      <p class="muted">Örs seviyen arenadaki saldırını da artırır.</p>
     </section>
 
     <section class="card">
@@ -63,9 +83,10 @@
   </main>
 
   <footer>
-    <span>ForgeMaster Web v0.1 — basit idle prototip</span>
+    <span>EmberAnvil v0.2 — özgün yapım, tüm modeller kod ile üretildi</span>
   </footer>
 
   <script src="app.js"></script>
+  <script type="module" src="battle.js"></script>
 </body>
 </html>

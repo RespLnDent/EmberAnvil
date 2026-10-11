@@ -19,3 +19,10 @@ button.danger { border-color:#7a2e2e; }
 #ages li.done { color:#7dd87d; }
 #ages li.now { color:var(--gold); font-weight:bold; }
 footer { text-align:center; color:var(--muted); padding:16px; font-size:.85em; }
+.arena-wrap { display:grid; gap:8px; }
+#arena { width:100%; height:300px; border-radius:10px; border:1px solid #3a2f1e; background:#000; }
+.hp-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.hp { font-size:.9em; }
+.hp .bar { margin:4px 0; }
+#hp-player { height:100%; width:100%; background:linear-gradient(90deg,#57d957,#2e8b57); }
+#hp-enemy { height:100%; width:100%; background:linear-gradient(90deg,#e85757,#8b2e2e); }
