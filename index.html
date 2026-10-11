@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ForgeMaster Web - Idle Demirci</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>⚒️ ForgeMaster Web</h1>
+    <p class="subtitle">Çağlar boyunca döv, yükselt, idle kazan</p>
+  </header>
+
+  <main>
+    <section class="card" id="status-card">
+      <h2 id="age-name">Taş Devri</h2>
+      <div class="res-grid">
+        <div>🪙 Altın: <strong id="gold">0</strong></div>
+        <div>🪨 Cevher: <strong id="ore">0</strong></div>
+        <div>🧱 Külçe: <strong id="ingot">0</strong></div>
+        <div>⭐ Seviye: <strong id="level">1</strong> (<span id="xp">0</span>/<span id="xp-need">20</span> XP)</div>
+        <div>⏳ Saniyede: <strong id="per-sec">0</strong> altın</div>
+        <div>🔨 Dövme gücü: <strong id="forge-power">1</strong></div>
+      </div>
+      <div class="bar"><div id="xp-bar"></div></div>
+      <p id="offline-msg" class="muted"></p>
+    </section>
+
+    <section class="card">
+      <h2>Eylemler</h2>
+      <div class="btn-row">
+        <button id="btn-mine">⛏️ Maden Kaz (+<span id="mine-amount">1</span> cevher)</button>
+        <button id="btn-smelt">🔥 Erit (2 cevher → 1 külçe)</button>
+        <button id="btn-forge">⚒️ Döv (<span id="forge-cost">2</span> külçe → altın)</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Yükseltmeler</h2>
+      <div class="btn-row">
+        <button id="btn-up-pick">⛏️ Kazma Lv <span id="pick-lv">1</span> (<span id="pick-cost">25</span> 🪙)</button>
+        <button id="btn-up-forge">⚒️ Örs Lv <span id="forge-lv">1</span> (<span id="forge-up-cost">50</span> 🪙)</button>
+        <button id="btn-up-bellows">💨 Körük Lv <span id="bellows-lv">0</span> (<span id="bellows-cost">40</span> 🪙)</button>
+      </div>
+      <p class="muted">Kazma: tıklama başına cevher. Örs: dövme başına altın. Körük: saniyede altın.</p>
+    </section>
+
+    <section class="card">
+      <h2>Çağlar</h2>
+      <ol id="ages"></ol>
+      <button id="btn-age">🚀 Sonraki Çağa Geç (<span id="age-cost">500</span> 🪙)</button>
+    </section>
+
+    <section class="card">
+      <h2>Kayıt</h2>
+      <div class="btn-row">
+        <button id="btn-save">💾 Kaydet</button>
+        <button id="btn-reset" class="danger">🗑️ Sıfırla</button>
+      </div>
+      <p class="muted">Otomatik kayıt 5 sn'de bir + çevrimdışı kazanç (maks 8 saat).</p>
+    </section>
+  </main>
+
+  <footer>
+    <span>ForgeMaster Web v0.1 — basit idle prototip</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
